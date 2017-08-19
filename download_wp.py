@@ -18,9 +18,10 @@ from docopt import docopt
 
 from wallpaper import WallPaper
 
+__version__ = 'wallpaper v0.2'
 
 def main():
-    args = docopt(__doc__, version='wallpaper ')
+    args = docopt(__doc__, version=__version__)
 
     kwargs = {
         'url': 'http://www.socwall.com/',
