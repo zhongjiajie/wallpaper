@@ -20,14 +20,14 @@ class WallPaper(object):
         }
         self.timeout = timeout if timeout else 60
         self.max_retry_time = int(max_retry_time) if max_retry_time else 3
-        # 0下载全量 其他下载指定数量
-        self.num = int(num) if num else 10
+        self.num = int(num) if num else 10  # 0下载全量 其他下载指定数量
         self.size = size if size else 'small'
 
-        # todo bug here
+        # todo 经常检验不能连网站，但是浏览器可以连接
         # if not self.can_conn_site:
         #     self.raise_req_error(etype='connect')
 
+        # 错误码及正则表达式常量
         self.ERROR_RESP_CODE = [400, 403, 404, 429, 500, 503, 504]
         _SMALL_PIC_REGEX = r'<img\ .*?src="(/images/wallpapers/\d+-\d+x\d+.jpg)"'
         _NEXT_PAGE_REGEX = r'<li class="nextPage"><a href="(/wallpapers/.*)">Next</a>'
@@ -44,7 +44,7 @@ class WallPaper(object):
         try:
             urllib2.urlopen(self.url, timeout=self.timeout)
             return True
-        except urllib2.URLError as err:
+        except urllib2.URLError:
             return False
 
     @property
@@ -59,13 +59,13 @@ class WallPaper(object):
             raise urllib2.URLError('max_retry_error: fail request {url} '
                                    'too many time'.format(url=url))
         elif etype == 'connect':
-            raise urllib2.URLError('can not connect the `wall paper` site'
-                                   'check your computer network.')
+            raise urllib2.URLError('can not connect the `wall paper` site check '
+                                   'your browser open `http://www.socwall.com/` '
+                                   'or retry later.')
 
     def get_resp(self, url, retry_time=0):
         """获取网页源代码"""
         req = urllib2.Request(url, headers=self.headers)
-
         response = urllib2.urlopen(req, timeout=self.timeout)
 
         if response.getcode() in self.ERROR_RESP_CODE:
@@ -85,22 +85,17 @@ class WallPaper(object):
 
     def parse(self):
         """解析网页下载图片"""
-        if self.download_big_pic:
-            self._parse_big_pic()
-        else:
-            self._parse_small_pic()
-
-    def _parse_small_pic(self):
-        """解析下载小图"""
         url = self.url
-        url_samll_pic_lst = []
+        url_pic_lst = []
 
-        while len(url_samll_pic_lst) < self.num:
+        while len(url_pic_lst) < self.num:
             resp = self.get_resp(url)
             html = resp.read()
 
-            page_url_lst = map(self._subsite_url, self._SMALL_PIC_PATTERN.findall(html))
-            url_samll_pic_lst.extend(page_url_lst)
+            if self.download_big_pic:
+                url_pic_lst.extend(self._parse_big_pic(html))
+            else:
+                url_pic_lst.extend(self._parse_small_pic(html))
 
             url = self._parse_next_page(html)
 
@@ -108,29 +103,18 @@ class WallPaper(object):
             if not url:
                 break
 
-        self._download_pic(url_samll_pic_lst[0: self.num])
+        self._download_pic(url_pic_lst[0: self.num])
 
-    def _parse_big_pic(self):
+    def _parse_small_pic(self, html):
+        """解析下载小图"""
+        page_url_lst = map(self._subsite_url, self._SMALL_PIC_PATTERN.findall(html))
+        return page_url_lst
+
+    def _parse_big_pic(self, html):
         """解析下载大图"""
-        url = self.url
-        url_big_pic_lst = []
-
-        while len(url_big_pic_lst) < self.num:
-            resp = self.get_resp(url)
-            html = resp.read()
-
-            sub_big_pic_lst = map(self._subsite_url, self._BIG_PIC_SUB_PATTERN.findall(html))
-            print len(sub_big_pic_lst)
-            page_url_lst = map(self._parse_sub_big_pic, sub_big_pic_lst)
-            url_big_pic_lst.extend(page_url_lst)
-
-            url = self._subsite_url(self._parse_next_page(html))
-
-            # 到达最后一页
-            if not url:
-                break
-
-        self._download_pic(url_big_pic_lst[0: self.num])
+        sub_big_pic_lst = map(self._subsite_url, self._BIG_PIC_SUB_PATTERN.findall(html))
+        page_url_lst = map(self._parse_sub_big_pic, sub_big_pic_lst)
+        return page_url_lst
 
     def _parse_sub_big_pic(self, url):
         """解析下载大图sub程序"""
@@ -177,15 +161,3 @@ class WallPaper(object):
             os.remove(self.path)
         elif os.path.isdir(self.path):
             shutil.rmtree(self.path)
-
-# # 模拟IE下载图片
-# def DownloadPicture(url):
-#     try:
-#         head = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko'}
-#         html = requests.get(url, headers=head, timeout=40)  # 模拟IE下载，40s超时退出
-#         with open(r'E://picture2//%s' % url[41:], 'wb+') as f:
-#             f.write(html.content)
-#     except:
-#         with open(r'failure_url.txt', 'a') as f:
-#             f.write(url + '\n')
-#         print 'download ' + url + ' failure!'
