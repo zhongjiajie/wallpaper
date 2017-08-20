@@ -29,7 +29,7 @@ def main():
         'size': args['--size'],
         'path': args['--path'],
         'timeout': args['--timeout'],
-        'max_retry_time': args['--max_retry_time']
+        'max_retry_time': args['--retry_time']
     }
 
     wp = WallPaper(**kwargs)
