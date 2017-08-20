@@ -20,6 +20,7 @@ from wallpaper import WallPaper
 
 __version__ = 'wallpaper v0.2'
 
+
 def main():
     args = docopt(__doc__, version=__version__)
     kwargs = {
@@ -33,6 +34,7 @@ def main():
 
     wp = WallPaper(**kwargs)
     wp.parse()
+
 
 if __name__ == '__main__':
     main()
