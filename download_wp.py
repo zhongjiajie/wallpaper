@@ -2,16 +2,16 @@
 # -*- coding:utf-8 -*-
 
 """Usage:
-  download_wp.py [-n=<num>] [-s=<size>] [-t=<timeout>] [-m=<max_retry_time>] [-p=<path>]
+  download_wp.py [-n=<num>] [-s=<size>] [-t=<timeout>] [-r=<max_retry_time>] [-p=<path>]
   download_wp.py (--help | -h)
 
 Options:
-  --help -h                              Show this screen.
-  --num -n=<num>                         Number of picture to download, default 10.
-  --size -s=(size)                       Size of download picture, `small` or `big`, default `small`.
-  --timeout -t=<timeout>                 Timeout of request, default 60.
-  --max_retry_time -m=<max_retry_time>   Max Retry Time of request, default 3.
-  --path -p=<path>                       Path to download picture, default `$project/pic/`.
+  --help -h                     Show this screen.
+  --num -n=<num>                Number of picture to download, default 10.
+  --size -s=(size)              Size of download picture, `small` or `big`, default `small`.
+  --timeout -t=<timeout>        Timeout of request, default 60.
+  --retry_time -r=<retry_time>  Max Retry Time of request, default 3.
+  --path -p=<path>              Path to download picture, default `$project/pic/`.
 """
 
 from docopt import docopt
